@@ -1,7 +1,7 @@
 [project]
 name = "wesad"
 version = "0.1.0"
-description = "Add your description here"
+description = "A collection of utilities for the WESAD dataset as Python package and scripts."
 readme = "README.md"
 authors = [
     { name = "ArcaLunar", email = "arca@connect.hku.hk" }
