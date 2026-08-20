@@ -57,7 +57,7 @@ def random_sample(cond: ConditionInterval, duration: float) -> ConditionInterval
     return ConditionInterval(
         condition_id=cond.condition_id,
         start_timestamp=start_timestamp,
-        end_timestamp=cond.end_timestamp,
+        end_timestamp=start_timestamp + duration,
     )
 
 
@@ -109,9 +109,11 @@ def resample(source: np.ndarray, original_rate: int, target_rate: int):
 
     source = np.asarray(source)
     divisor = math.gcd(original_rate, target_rate)
-    return resample_poly(
-        source,
-        up=target_rate // divisor,
-        down=original_rate // divisor,
-        axis=0,
+    return np.array(
+        resample_poly(
+            source,
+            up=target_rate // divisor,
+            down=original_rate // divisor,
+            axis=0,
+        )
     )
