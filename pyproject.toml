@@ -16,7 +16,6 @@ dependencies = [
 ]
 
 [project.scripts]
-wesad = "wesad:main"
 wesad-download = "wesad.download:main"
 
 [build-system]
