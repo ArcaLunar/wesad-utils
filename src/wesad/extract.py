@@ -45,7 +45,7 @@ def find_condition(labels: np.ndarray, condition_id: CONDITION_ID_TYPE):
     return results[0]
 
 
-def shrink_to(cond: ConditionInterval, duration: float) -> ConditionInterval:
+def random_sample(cond: ConditionInterval, duration: float) -> ConditionInterval:
     """
     Sample a segment of interval of length `duration` from interval `cond`
     """
@@ -74,17 +74,21 @@ def select_windows(
 
     for cond_id in condition_ids:
         interval = find_condition(labels, cond_id)
-        selected.append(shrink_to(interval, duration))
+        selected.append(random_sample(interval, duration))
 
     return selected
 
 
 # =============================================
-# Extract features corresponding to labels
+# NOTE: Extract features corresponding to labels
 # =============================================
 
 
-def _slice(source: np.ndarray, cond: ConditionInterval, rate: int, name: str):
+def slice_segment(source: np.ndarray, cond: ConditionInterval, rate: int, name: str):
+    """
+    Slice the `source` into a segment of (synced) duration `cond.duration` under sampling rate `rate`
+    """
+
     start = round(cond.start_timestamp * rate)
     duration = round(cond.duration * rate)
     selected = source[start : start + duration]
@@ -96,5 +100,18 @@ def _slice(source: np.ndarray, cond: ConditionInterval, rate: int, name: str):
     return selected
 
 
-def select_feature_window():
-    pass
+def resample(source: np.ndarray, original_rate: int, target_rate: int):
+    """
+    Resample a signal along dimension 0.
+    """
+    import math
+    from scipy.signal import resample_poly
+
+    source = np.asarray(source)
+    divisor = math.gcd(original_rate, target_rate)
+    return resample_poly(
+        source,
+        up=target_rate // divisor,
+        down=original_rate // divisor,
+        axis=0,
+    )

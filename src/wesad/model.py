@@ -6,7 +6,6 @@ from loguru import logger
 def _missing(shape: tuple[int, ...], name: str) -> np.ndarray:
     """Represent an absent signal without storing a NumPy type object."""
 
-    logger.warning(f"Missing field when constructing {name}")
     return np.empty(shape, dtype=np.float64)
 
 
