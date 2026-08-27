@@ -1,6 +1,6 @@
 [project]
 name = "wesad"
-version = "0.1.3"
+version = "0.2.0"
 description = "A collection of utilities for the WESAD dataset as Python package and scripts."
 readme = "README.md"
 authors = [

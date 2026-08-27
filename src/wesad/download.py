@@ -1,3 +1,5 @@
+"""Download and unpack the WESAD dataset archive."""
+
 import zipfile
 import requests
 from loguru import logger
@@ -12,8 +14,8 @@ from rich.progress import (
 )
 
 WESAD_URL = "https://uni-siegen.sciebo.de/public.php/dav/files/HGdUkoNlW1Ub0Gx"
-STORAGE_PATH = "file.zip"
-EXTRACT_PATH = "data/"
+ZIP_PATH = Path("wesad.zip")
+DATA_DIR = Path("data/")
 
 CHUNK_SIZE = 1024 * 1024  # =1MB
 
@@ -45,7 +47,7 @@ def download(url: str, destination: Path) -> None:
                         progress.update(task, advance=len(chunk))
 
 
-def extract(zip_path: Path, destination: Path) -> None:
+def unzip(zip_path: Path, destination: Path) -> None:
     """Extract a zip file at `zip_path` to `destination` with visualized progress"""
 
     with zipfile.ZipFile(zip_path, "r") as archive:
@@ -78,17 +80,14 @@ def extract(zip_path: Path, destination: Path) -> None:
 
 
 def main():
-    zip_path = Path(STORAGE_PATH)
-    extract_path = Path(EXTRACT_PATH)
-
     logger.info(f"WESAD Dataset URL: {WESAD_URL}")
-    logger.info(f"Saving zip file to {STORAGE_PATH}")
-    download(WESAD_URL, zip_path)
+    logger.info(f"Saving zip file to {ZIP_PATH}")
+    download(WESAD_URL, ZIP_PATH)
 
-    logger.info(f"Extracting to {EXTRACT_PATH}")
-    extract(zip_path, extract_path)
+    logger.info(f"Extracting to {DATA_DIR}")
+    unzip(ZIP_PATH, DATA_DIR)
 
     logger.info(f"Removing temporary zip file")
-    zip_path.unlink()
+    ZIP_PATH.unlink()
 
     logger.info("Download and extract complete!")

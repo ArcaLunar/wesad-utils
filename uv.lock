@@ -486,7 +486,7 @@ wheels = [
 
 [[package]]
 name = "wesad"
-version = "0.1.0"
+version = "0.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "loguru" },
@@ -499,12 +499,12 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "loguru", specifier = ">=0.7.3" },
-    { name = "numpy", specifier = ">=2.5.2" },
-    { name = "pydantic", specifier = ">=2.13.4" },
-    { name = "requests", specifier = ">=2.34.2" },
-    { name = "rich", specifier = ">=15.0.0" },
-    { name = "scipy", specifier = ">=1.18.0" },
+    { name = "loguru" },
+    { name = "numpy" },
+    { name = "pydantic" },
+    { name = "requests" },
+    { name = "rich" },
+    { name = "scipy" },
 ]
 
 [[package]]

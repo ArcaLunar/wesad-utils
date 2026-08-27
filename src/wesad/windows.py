@@ -1,18 +1,17 @@
-"""Derived classes from raw WESAD dataset."""
+"""Window/interval types derived from a subject record."""
 
 import numpy as np
-from dataclasses import dataclass
 from pydantic import BaseModel, ConfigDict
 from typing_extensions import Literal
 
-CONDITION_ID_TYPE = Literal[1, 2, 3, 4]
-CONDITION_NAME_TYPE = Literal["baseline", "stress", "amusement", "meditation"]
+ConditionId = Literal[1, 2, 3, 4]
+ConditionName = Literal["baseline", "stress", "amusement", "meditation"]
 
 
 class ConditionInterval(BaseModel):
     model_config = ConfigDict(frozen=True)
 
-    condition_id: CONDITION_ID_TYPE
+    condition_id: ConditionId
     """1=baseline, 2=stress, 3=amusement, 4=meditation"""
 
     start_timestamp: float
@@ -33,8 +32,8 @@ class SignalStats(BaseModel):
 
     mean: float
     std: float
-    minimum: float
-    maximum: float
+    min: float
+    max: float
     slope_per_second: float
 
 
@@ -46,8 +45,8 @@ class WESADWindow(BaseModel):
 
     subject: str
 
-    condition_id: CONDITION_ID_TYPE
-    condition_name: CONDITION_NAME_TYPE
+    condition_id: ConditionId
+    condition_name: ConditionName
 
     start_timestamp: float
     end_timestamp: float

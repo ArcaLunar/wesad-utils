@@ -4,16 +4,18 @@ import numpy as np
 import random
 from loguru import logger
 from .metadata import LABEL_HZ
-from .derived_classes import ConditionInterval, CONDITION_ID_TYPE
+from .windows import ConditionInterval, ConditionId
 
 # =============================================
 # Label Processing
 # =============================================
 
 
-def find_condition(labels: np.ndarray, condition_id: CONDITION_ID_TYPE):
+def find_condition_runs(
+    labels: np.ndarray, condition_id: ConditionId
+) -> list[ConditionInterval]:
     """
-    Return contiguous run for a condition.
+    Return all contiguous runs of a condition.
     By protocol, there's only one such interval for 1/2/3, but two for 4.
     """
 
@@ -42,20 +44,21 @@ def find_condition(labels: np.ndarray, condition_id: CONDITION_ID_TYPE):
         logger.info(f"  from {cond.start_timestamp:.2f} to {cond.end_timestamp:.2f}")
 
     assert len(results) >= 1
-    return results[0]
+    return results
 
 
-def random_sample(cond: ConditionInterval, duration: float) -> ConditionInterval:
+def random_subinterval(interval: ConditionInterval, duration: float) -> ConditionInterval:
     """
-    Sample a segment of interval of length `duration` from interval `cond`
+    Sample a segment of length `duration` from within `interval`
     """
-    assert cond.duration >= duration
+
+    assert interval.duration >= duration
 
     start_timestamp = random.uniform(
-        cond.start_timestamp, cond.end_timestamp - duration
+        interval.start_timestamp, interval.end_timestamp - duration
     )
     return ConditionInterval(
-        condition_id=cond.condition_id,
+        condition_id=interval.condition_id,
         start_timestamp=start_timestamp,
         end_timestamp=start_timestamp + duration,
     )
@@ -63,44 +66,46 @@ def random_sample(cond: ConditionInterval, duration: float) -> ConditionInterval
 
 def select_windows(
     labels: np.ndarray,
-    condition_ids: tuple[CONDITION_ID_TYPE, ...],
+    condition_ids: tuple[ConditionId, ...],
     duration: float,
 ) -> list[ConditionInterval]:
     """
-    For each condition, select the window from the labels.
+    For each condition, select a random window from one of its runs.
     """
 
     selected: list[ConditionInterval] = []
 
     for cond_id in condition_ids:
-        interval = find_condition(labels, cond_id)
-        selected.append(random_sample(interval, duration))
+        runs = find_condition_runs(labels, cond_id)
+        interval = random.choice(runs)
+        selected.append(random_subinterval(interval, duration))
 
     return selected
 
 
 # =============================================
-# NOTE: Extract features corresponding to labels
+# Slicing & Resampling
 # =============================================
 
 
-def slice_segment(source: np.ndarray, cond: ConditionInterval, rate: int, name: str):
+def slice_window(signal: np.ndarray, interval: ConditionInterval, hz: int) -> np.ndarray:
     """
-    Slice the `source` into a segment of (synced) duration `cond.duration` under sampling rate `rate`
+    Slice the `signal` (sampled at `hz`) into a segment of duration `interval.duration`,
+    synced with `interval`'s start timestamp.
     """
 
-    start = round(cond.start_timestamp * rate)
-    duration = round(cond.duration * rate)
-    selected = source[start : start + duration]
+    start = round(interval.start_timestamp * hz)
+    duration = round(interval.duration * hz)
+    selected = signal[start : start + duration]
 
     if selected.shape[0] != duration:
-        logger.error(f"Duration exceeded range for {name}")
+        logger.error(f"Duration exceeded range for condition id {interval.condition_id}")
         raise Exception("Mismatched")
 
     return selected
 
 
-def resample(source: np.ndarray, original_rate: int, target_rate: int):
+def resample(source: np.ndarray, original_rate: int, target_rate: int) -> np.ndarray:
     """
     Resample a signal along dimension 0.
     """

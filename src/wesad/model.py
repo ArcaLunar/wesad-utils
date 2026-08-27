@@ -1,9 +1,11 @@
+"""Raw per-subject records loaded from the synchronized WESAD pickle."""
+
 import numpy as np
 from dataclasses import dataclass
 from loguru import logger
 
 
-def _missing(shape: tuple[int, ...], name: str) -> np.ndarray:
+def _missing(shape: tuple[int, ...]) -> np.ndarray:
     """Represent an absent signal without storing a NumPy type object."""
 
     return np.empty(shape, dtype=np.float64)
@@ -15,24 +17,25 @@ class ChestSignals:
     ECG: np.ndarray
     EMG: np.ndarray
     EDA: np.ndarray
-    Temp: np.ndarray
-    Resp: np.ndarray
+    TEMP: np.ndarray
+    RESP: np.ndarray
 
     def __init__(self, sample: dict):
-        self.ACC = sample.get("ACC", _missing((0, 3), "ChestSignals.ACC"))
-        self.ECG = sample.get("ECG", _missing((0, 1), "ChestSignals.ECG"))
-        self.EMG = sample.get("EMG", _missing((0, 1), "ChestSignals.EMG"))
-        self.EDA = sample.get("EDA", _missing((0, 1), "ChestSignals.EDA"))
-        self.Temp = sample.get("Temp", _missing((0, 1), "ChestSignals.Temp"))
-        self.Resp = sample.get("Resp", _missing((0, 1), "ChestSignals.Resp"))
+        # Chest pickle keys use mixed case ("Temp", "Resp") unlike wrist ("TEMP").
+        self.ACC = sample.get("ACC", _missing((0, 3)))
+        self.ECG = sample.get("ECG", _missing((0, 1)))
+        self.EMG = sample.get("EMG", _missing((0, 1)))
+        self.EDA = sample.get("EDA", _missing((0, 1)))
+        self.TEMP = sample.get("Temp", _missing((0, 1)))
+        self.RESP = sample.get("Resp", _missing((0, 1)))
 
         logger.info("ChestSignals data shape")
         logger.info(f"  - ACC: {self.ACC.shape}")
         logger.info(f"  - ECG: {self.ECG.shape}")
         logger.info(f"  - EMG: {self.EMG.shape}")
         logger.info(f"  - EDA: {self.EDA.shape}")
-        logger.info(f"  - Temp: {self.Temp.shape}")
-        logger.info(f"  - Resp: {self.Resp.shape}")
+        logger.info(f"  - TEMP: {self.TEMP.shape}")
+        logger.info(f"  - RESP: {self.RESP.shape}")
 
 
 @dataclass
@@ -40,25 +43,25 @@ class WristSignals:
     ACC: np.ndarray
     BVP: np.ndarray
     EDA: np.ndarray
-    Temp: np.ndarray
+    TEMP: np.ndarray
 
     def __init__(self, sample: dict):
-        self.ACC = sample.get("ACC", _missing((0, 3), "WristSignals.ACC"))
-        self.BVP = sample.get("BVP", _missing((0, 1), "WristSignals.BVP"))
-        self.EDA = sample.get("EDA", _missing((0, 1), "WristSignals.EDA"))
-        self.Temp = sample.get("TEMP", _missing((0, 1), "WristSignals.Temp"))
+        self.ACC = sample.get("ACC", _missing((0, 3)))
+        self.BVP = sample.get("BVP", _missing((0, 1)))
+        self.EDA = sample.get("EDA", _missing((0, 1)))
+        self.TEMP = sample.get("TEMP", _missing((0, 1)))
 
         logger.info("WristSignals data shape")
         logger.info(f"  - ACC: {self.ACC.shape}")
         logger.info(f"  - BVP: {self.BVP.shape}")
         logger.info(f"  - EDA: {self.EDA.shape}")
-        logger.info(f"  - Temp: {self.Temp.shape}")
+        logger.info(f"  - TEMP: {self.TEMP.shape}")
 
 
 @dataclass
-class WESADDataset:
+class SubjectData:
     """
-    Dataclass to model raw data read from provided synchronized pickle.
+    Dataclass modeling one subject's raw data read from the provided synchronized pickle.
     """
 
     subject: str
@@ -74,9 +77,9 @@ class WESADDataset:
     """Time series data"""
 
     def __init__(self, sample: dict):
-        logger.info("Constructing WESADDataset.")
+        logger.info("Constructing SubjectData.")
         self.subject = sample.get("subject", "")
-        self.label = sample.get("label", _missing((0,), "WESADDataset.label"))
+        self.label = sample.get("label", _missing((0,)))
         logger.info("Label data shape")
         logger.info(f"  - label: {self.label.shape}")
 
